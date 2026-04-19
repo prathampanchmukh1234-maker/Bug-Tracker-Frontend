@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import { TicketCard } from './TicketCard';
 import { useAuth } from '../context/AuthContext';
+import { apiUrl } from '../utils/api';
 import { Plus, MoreHorizontal } from 'lucide-react';
 import { cn } from './Badge';
 import toast from 'react-hot-toast';
@@ -77,7 +78,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
     // API Call
     try {
-      const response = await fetch(`/api/tickets/${draggableId}/status`, {
+      const response = await fetch(apiUrl(`/api/tickets/${draggableId}/status`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

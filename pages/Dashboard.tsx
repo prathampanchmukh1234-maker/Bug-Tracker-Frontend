@@ -7,6 +7,7 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '../components/Badge';
 import toast from 'react-hot-toast';
+import { apiUrl } from '../utils/api';
 
 export const Dashboard: React.FC = () => {
   const { projects, fetchProjects, loading, error } = useProjects();
@@ -22,7 +23,7 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchMyTickets = async () => {
       try {
-        const response = await fetch(`/api/tickets?assigneeId=${user?.id}`, {
+        const response = await fetch(apiUrl(`/api/tickets?assigneeId=${user?.id}`), {
           headers: {
             'Authorization': `Bearer ${session?.access_token}`
           }
@@ -55,7 +56,7 @@ export const Dashboard: React.FC = () => {
     e.preventDefault();
     setCreating(true);
     try {
-      const response = await fetch('/api/projects', {
+      const response = await fetch(apiUrl('/api/projects'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Clock, CheckCircle2, AlertCircle, Bug, Zap, ClipboardList } from 'lucide-react';
 import { PriorityBadge, TypeBadge, StatusBadge } from '../components/Badge';
+import { apiUrl } from '../utils/api';
 
 export const ProjectSummary: React.FC = () => {
   const { id } = useParams();
@@ -17,10 +18,10 @@ export const ProjectSummary: React.FC = () => {
       if (!session || !id) return;
       try {
         const [pRes, tRes] = await Promise.all([
-          fetch(`/api/projects/${id}`, {
+          fetch(apiUrl(`/api/projects/${id}`), {
             headers: { 'Authorization': `Bearer ${session.access_token}` }
           }),
-          fetch(`/api/tickets?projectId=${id}`, {
+          fetch(apiUrl(`/api/tickets?projectId=${id}`), {
             headers: { 'Authorization': `Bearer ${session.access_token}` }
           })
         ]);

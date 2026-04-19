@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { LogOut, User as UserIcon, Bug, Bell, CheckCircle2, MessageSquare, UserPlus, Info } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
+import { apiUrl } from '../utils/api';
 import { cn } from '../components/Badge';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -19,7 +20,7 @@ export const Navbar: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
-      const response = await fetch('/api/me', {
+      const response = await fetch(apiUrl('/api/me'), {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
         }
@@ -38,7 +39,7 @@ export const Navbar: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
-      const response = await fetch('/api/notifications', {
+      const response = await fetch(apiUrl('/api/notifications'), {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
         }
@@ -65,7 +66,7 @@ export const Navbar: React.FC = () => {
   const handleMarkAsRead = async (id: string, ticketId?: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      await fetch(`/api/notifications/${id}/read`, {
+      await fetch(apiUrl(`/api/notifications/${id}/read`), {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`
@@ -86,7 +87,7 @@ export const Navbar: React.FC = () => {
   const markAllRead = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      await fetch('/api/notifications/mark-all-read', {
+      await fetch(apiUrl('/api/notifications/mark-all-read'), {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`

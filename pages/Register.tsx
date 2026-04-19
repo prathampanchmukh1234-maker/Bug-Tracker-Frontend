@@ -3,6 +3,7 @@ import { supabase } from '../utils/supabaseClient';
 import { Link, useNavigate } from 'react-router-dom';
 import { Bug, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { apiUrl } from '../utils/api';
 
 export const Register: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +16,7 @@ export const Register: React.FC = () => {
   const navigate = useNavigate();
 
   const createProfile = async (accessToken: string) => {
-    const profileRes = await fetch('/api/me', {
+    const profileRes = await fetch(apiUrl('/api/me'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

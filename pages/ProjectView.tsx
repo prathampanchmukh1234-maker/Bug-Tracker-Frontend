@@ -9,6 +9,7 @@ import { useSearchParams } from 'react-router-dom';
 import { PriorityBadge, TypeBadge, StatusBadge, cn } from '../components/Badge';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
+import { apiUrl } from '../utils/api';
 
 export const ProjectView: React.FC = () => {
   const { id } = useParams();
@@ -102,10 +103,10 @@ export const ProjectView: React.FC = () => {
       if (search) params.append('search', search);
 
       const [pRes, tRes] = await Promise.all([
-        fetch(`/api/projects/${id}`, {
+        fetch(apiUrl(`/api/projects/${id}`), {
           headers: { 'Authorization': `Bearer ${session.access_token}` }
         }),
-        fetch(`/api/tickets?${params.toString()}`, {
+        fetch(apiUrl(`/api/tickets?${params.toString()}`), {
           headers: { 'Authorization': `Bearer ${session.access_token}` }
         })
       ]);
@@ -156,7 +157,7 @@ export const ProjectView: React.FC = () => {
     e.preventDefault();
     setCreating(true);
     try {
-      const response = await fetch('/api/tickets', {
+      const response = await fetch(apiUrl('/api/tickets'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -195,7 +196,7 @@ export const ProjectView: React.FC = () => {
     e.preventDefault();
     setInviting(true);
     try {
-      const response = await fetch(`/api/projects/${id}/members`, {
+      const response = await fetch(apiUrl(`/api/projects/${id}/members`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -224,7 +225,7 @@ export const ProjectView: React.FC = () => {
     e.preventDefault();
     setUpdating(true);
     try {
-      const response = await fetch(`/api/projects/${id}`, {
+      const response = await fetch(apiUrl(`/api/projects/${id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -252,7 +253,7 @@ export const ProjectView: React.FC = () => {
   const handleDeleteProject = async () => {
     setDeleting(true);
     try {
-      const response = await fetch(`/api/projects/${id}`, {
+      const response = await fetch(apiUrl(`/api/projects/${id}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`
@@ -283,7 +284,7 @@ export const ProjectView: React.FC = () => {
     try {
       const results = await Promise.allSettled(
         selectedTickets.map(async ticketId => {
-          const res = await fetch(`/api/tickets/${ticketId}/status`, {
+          const res = await fetch(apiUrl(`/api/tickets/${ticketId}/status`), {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
@@ -314,7 +315,7 @@ export const ProjectView: React.FC = () => {
     if (!memberToRemove) return;
     setRemovingMember(true);
     try {
-      const res = await fetch(`/api/projects/${id}/members/${memberToRemove.user.id}`, {
+      const res = await fetch(apiUrl(`/api/projects/${id}/members/${memberToRemove.user.id}`), {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${session?.access_token}` }
       });
@@ -342,7 +343,7 @@ export const ProjectView: React.FC = () => {
   const handleCompleteSprint = async (sprintName: string) => {
     if (!window.confirm(`Complete ${sprintName}? Unfinished items will be moved to the backlog.`)) return;
     try {
-      const response = await fetch(`/api/tickets/complete-sprint/${id}`, {
+      const response = await fetch(apiUrl(`/api/tickets/complete-sprint/${id}`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

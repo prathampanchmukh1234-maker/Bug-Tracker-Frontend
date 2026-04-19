@@ -6,6 +6,7 @@ import { Modal } from '../components/Modal';
 import { Clock, User, MessageSquare, ArrowLeft, Trash2, Send, Plus, CheckSquare, Link2, History, ChevronRight, BarChart3, Users, Square, Settings, Eye, EyeOff } from 'lucide-react';
 import { formatDistanceToNow, isPast, isToday, format } from 'date-fns';
 import toast from 'react-hot-toast';
+import { apiUrl } from '../utils/api';
 
 export const TicketDetail: React.FC = () => {
   const { id } = useParams();
@@ -60,16 +61,16 @@ export const TicketDetail: React.FC = () => {
     if (!session || !id) return;
     try {
       const [tRes, cRes, hRes, aRes] = await Promise.all([
-        fetch(`/api/tickets/${id}`, {
+        fetch(apiUrl(`/api/tickets/${id}`), {
           headers: { 'Authorization': `Bearer ${session.access_token}` }
         }),
-        fetch(`/api/comments?ticketId=${id}`, {
+        fetch(apiUrl(`/api/comments?ticketId=${id}`), {
           headers: { 'Authorization': `Bearer ${session.access_token}` }
         }),
-        fetch(`/api/tickets/${id}/history`, {
+        fetch(apiUrl(`/api/tickets/${id}/history`), {
           headers: { 'Authorization': `Bearer ${session.access_token}` }
         }),
-        fetch(`/api/attachments?ticketId=${id}`, {
+        fetch(apiUrl(`/api/attachments?ticketId=${id}`), {
           headers: { 'Authorization': `Bearer ${session.access_token}` }
         })
       ]);
@@ -93,7 +94,7 @@ export const TicketDetail: React.FC = () => {
         });
         
         // Fetch project to get members for the edit modal
-        const pRes = await fetch(`/api/projects/${data.project_id}`, {
+        const pRes = await fetch(apiUrl(`/api/projects/${data.project_id}`), {
           headers: { 'Authorization': `Bearer ${session.access_token}` }
         });
         if (pRes.ok) {
@@ -142,7 +143,7 @@ export const TicketDetail: React.FC = () => {
 
   const handleQuickUpdate = async (field: string, value: any) => {
     try {
-      const response = await fetch(`/api/tickets/${id}`, {
+      const response = await fetch(apiUrl(`/api/tickets/${id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +166,7 @@ export const TicketDetail: React.FC = () => {
   const handleDeleteComment = async (commentId: string) => {
     if (!confirm('Delete this comment?')) return;
     try {
-      const response = await fetch(`/api/comments/${commentId}`, {
+      const response = await fetch(apiUrl(`/api/comments/${commentId}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`
@@ -184,7 +185,7 @@ export const TicketDetail: React.FC = () => {
     e.preventDefault();
     setUpdating(true);
     try {
-      const response = await fetch(`/api/tickets/${id}`, {
+      const response = await fetch(apiUrl(`/api/tickets/${id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -213,7 +214,7 @@ export const TicketDetail: React.FC = () => {
     if (!newComment.trim()) return;
     setSubmitting(true);
     try {
-      const response = await fetch('/api/comments', {
+      const response = await fetch(apiUrl('/api/comments'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -240,7 +241,7 @@ export const TicketDetail: React.FC = () => {
   const handleDeleteTicket = async () => {
     if (!window.confirm('Are you sure you want to delete this ticket?')) return;
     try {
-      const response = await fetch(`/api/tickets/${id}`, {
+      const response = await fetch(apiUrl(`/api/tickets/${id}`), {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${session?.access_token}` }
       });
@@ -262,7 +263,7 @@ export const TicketDetail: React.FC = () => {
     e.preventDefault();
     setCreatingSubtask(true);
     try {
-      const response = await fetch('/api/tickets', {
+      const response = await fetch(apiUrl('/api/tickets'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -288,7 +289,7 @@ export const TicketDetail: React.FC = () => {
 
   const handleStatusChange = async (newStatus: string) => {
     try {
-      const response = await fetch(`/api/tickets/${id}/status`, {
+      const response = await fetch(apiUrl(`/api/tickets/${id}/status`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -312,7 +313,7 @@ export const TicketDetail: React.FC = () => {
   const handlePriorityChange = async (newPriority: string) => {
     setUpdatingPriority(true);
     try {
-      const response = await fetch(`/api/tickets/${id}`, {
+      const response = await fetch(apiUrl(`/api/tickets/${id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -338,7 +339,7 @@ export const TicketDetail: React.FC = () => {
   const handleToggleWatch = async () => {
     setTogglingWatch(true);
     try {
-      const response = await fetch(`/api/tickets/${id}/watch`, {
+      const response = await fetch(apiUrl(`/api/tickets/${id}/watch`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`
@@ -365,7 +366,7 @@ export const TicketDetail: React.FC = () => {
     formData.append('ticketId', id);
 
     try {
-      const response = await fetch('/api/attachments', {
+      const response = await fetch(apiUrl('/api/attachments'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`

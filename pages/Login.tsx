@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Bug, Mail, Lock, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { apiUrl } from '../utils/api';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -51,7 +52,7 @@ export const Login: React.FC = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: apiUrl('/auth/callback'),
           skipBrowserRedirect: true
         }
       });
