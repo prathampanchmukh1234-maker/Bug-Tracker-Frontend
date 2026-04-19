@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Bug, Mail, Lock, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { apiUrl } from '../utils/api';
 import { isSupabaseConfigured, supabase } from '../utils/supabaseClient';
 
 export const Login: React.FC = () => {
@@ -16,21 +15,6 @@ export const Login: React.FC = () => {
   useEffect(() => {
     if (session) navigate('/dashboard', { replace: true });
   }, [session, navigate]);
-
-  // Listen for OAuth success from popup
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
-        toast.success('Signed in with Google!');
-        // Supabase client will catch the session from local storage shared between popup and parent
-        // but we might need to manually trigger a refresh or wait for the AuthContext to pick it up.
-        // Usually, supa client's onAuthStateChange handles it.
-        window.location.reload(); 
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,19 +41,21 @@ export const Login: React.FC = () => {
       return;
     }
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: apiUrl('/auth/callback'),
-          skipBrowserRedirect: true
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            prompt: 'consent',
+            access_type: 'offline',
+          },
         }
       });
       if (error) throw error;
-      if (data?.url) {
-        window.open(data.url, 'google_login', 'width=600,height=700');
-      }
     } catch (error: any) {
       toast.error(error.message);
+      setLoading(false);
     }
   };
 
@@ -147,7 +133,7 @@ export const Login: React.FC = () => {
           <button
             type="button"
             onClick={handleGoogleLogin}
-            disabled={!isSupabaseConfigured}
+            disabled={loading || !isSupabaseConfigured}
             className="w-full py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-3 shadow-sm"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">

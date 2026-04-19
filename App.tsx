@@ -14,6 +14,7 @@ import { Dashboard } from './pages/Dashboard';
 import { ProjectView } from './pages/ProjectView';
 import { ProjectSummary } from './pages/ProjectSummary';
 import { TicketDetail } from './pages/TicketDetail';
+import { AuthCallback } from './pages/AuthCallback';
 
 const PrivateRoute = () => {
   const { session, loading } = useAuth();
@@ -33,6 +34,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             
             <Route element={<PrivateRoute />}>
               <Route element={<Layout />}>
