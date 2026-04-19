@@ -1,18 +1,48 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useProjects } from '../context/ProjectContext';
-import { LayoutDashboard, FolderKanban, Plus, ChevronRight, Hash } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, Plus, X } from 'lucide-react';
 import { cn } from './Badge';
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => {
   const { projects, activeProject, setActiveProject } = useProjects();
   const navigate = useNavigate();
 
   return (
-    <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col h-[calc(100vh-64px)] overflow-y-auto">
+    <>
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-slate-950/40 transition-opacity md:hidden',
+          isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        )}
+        onClick={onClose}
+      />
+      <aside
+        className={cn(
+          'fixed inset-y-16 left-0 z-50 w-[min(18rem,calc(100vw-1.5rem))] border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-y-auto transition-transform md:static md:inset-auto md:z-0 md:w-64 md:translate-x-0 md:h-[calc(100vh-64px)]',
+          isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        )}
+      >
       <div className="p-4 space-y-2">
+        <div className="mb-2 flex items-center justify-between md:hidden">
+          <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">Navigation</span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            aria-label="Close navigation menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
         <NavLink
           to="/dashboard"
+          onClick={onClose}
           className={({ isActive }) => cn(
             "flex items-center gap-3 px-4 py-3 rounded-xl transition-all group",
             isActive 
@@ -28,7 +58,10 @@ export const Sidebar: React.FC = () => {
           <div className="flex items-center justify-between mb-2 px-4">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Projects</span>
             <button 
-              onClick={() => navigate('/dashboard?new=true')}
+              onClick={() => {
+                navigate('/dashboard?new=true');
+                onClose?.();
+              }}
               className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
             >
               <Plus className="w-4 h-4 text-slate-400" />
@@ -41,7 +74,10 @@ export const Sidebar: React.FC = () => {
                 key={project.id}
                 to={`/projects/${project.id}`}
                 end={false}
-                onClick={() => setActiveProject(project)}
+                onClick={() => {
+                  setActiveProject(project);
+                  onClose?.();
+                }}
                 className={({ isActive }) => cn(
                   "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm",
                   isActive
@@ -63,5 +99,6 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
     </aside>
+    </>
   );
 };

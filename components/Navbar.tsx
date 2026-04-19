@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, User as UserIcon, Bug, Bell, CheckCircle2, MessageSquare, UserPlus, Info } from 'lucide-react';
+import { LogOut, Menu, Bug, Bell, CheckCircle2, MessageSquare, UserPlus, Info } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabaseClient';
 import { apiUrl } from '../utils/api';
 import { cn } from '../components/Badge';
 import { formatDistanceToNow } from 'date-fns';
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  onMenuToggle?: () => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profileName, setProfileName] = useState<string>('');
@@ -17,6 +21,7 @@ export const Navbar: React.FC = () => {
 
   const fetchProfile = async () => {
     try {
+      if (!supabase) return;
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
@@ -36,6 +41,7 @@ export const Navbar: React.FC = () => {
 
   const fetchNotifications = async () => {
     try {
+      if (!supabase) return;
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
@@ -65,6 +71,7 @@ export const Navbar: React.FC = () => {
 
   const handleMarkAsRead = async (id: string, ticketId?: string) => {
     try {
+      if (!supabase) return;
       const { data: { session } } = await supabase.auth.getSession();
       await fetch(apiUrl(`/api/notifications/${id}/read`), {
         method: 'PUT',
@@ -86,6 +93,7 @@ export const Navbar: React.FC = () => {
 
   const markAllRead = async () => {
     try {
+      if (!supabase) return;
       const { data: { session } } = await supabase.auth.getSession();
       await fetch(apiUrl('/api/notifications/mark-all-read'), {
         method: 'PUT',
@@ -109,19 +117,27 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 md:px-8 flex items-center justify-between sticky top-0 z-30">
+    <nav className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-40">
       <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onMenuToggle}
+          className="inline-flex md:hidden items-center justify-center rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
         <Link to="/dashboard" className="flex items-center gap-2 group">
           <div className="p-2 bg-indigo-600 rounded-xl group-hover:rotate-12 transition-transform">
             <Bug className="w-5 h-5 text-white" />
           </div>
-          <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">BugTracker<span className="text-indigo-600">Pro</span></span>
+          <span className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">BugTracker<span className="text-indigo-600">Pro</span></span>
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         {user && (
-          <div className="flex items-center gap-3 md:gap-5">
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-5">
             {/* Notifications */}
             <div className="relative">
               <button 
@@ -139,7 +155,7 @@ export const Navbar: React.FC = () => {
               {showNotifications && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
-                  <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                  <div className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-2rem))] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white">Notifications</h3>
                       {unreadCount > 0 && (
@@ -194,7 +210,7 @@ export const Navbar: React.FC = () => {
                 Member
               </span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 font-bold">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 font-bold">
               {(profileName || user.email || '?')[0].toUpperCase()}
             </div>
             <button

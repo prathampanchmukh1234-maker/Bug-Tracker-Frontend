@@ -1,11 +1,17 @@
 import React from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 
 export const Layout: React.FC = () => {
   const { session, loading } = useAuth();
+  const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
 
   if (loading) {
     return (
@@ -20,12 +26,12 @@ export const Layout: React.FC = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
+      <Navbar onMenuToggle={() => setIsSidebarOpen(true)} />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-7xl mx-auto">
+        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <main className="flex-1 overflow-y-auto px-4 py-4 sm:px-5 md:p-8">
+          <div className="max-w-7xl mx-auto w-full">
             <Outlet />
           </div>
         </main>

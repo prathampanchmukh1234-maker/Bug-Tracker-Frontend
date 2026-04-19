@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../utils/supabaseClient';
 import { Link, useNavigate } from 'react-router-dom';
 import { Bug, Mail, Lock, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { apiUrl } from '../utils/api';
+import { isSupabaseConfigured, supabase } from '../utils/supabaseClient';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -34,6 +34,10 @@ export const Login: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase) {
+      toast.error('Frontend auth is not configured. Check VITE_SUPABASE_* variables.');
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -48,6 +52,10 @@ export const Login: React.FC = () => {
   };
 
   const handleGoogleLogin = async () => {
+    if (!supabase) {
+      toast.error('Frontend auth is not configured. Check VITE_SUPABASE_* variables.');
+      return;
+    }
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -66,7 +74,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex p-3 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-500/20">
@@ -76,7 +84,12 @@ export const Login: React.FC = () => {
           <p className="text-slate-500 dark:text-slate-400 mt-2">Sign in to manage your projects</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800">
+        <div className="bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800">
+          {!isSupabaseConfigured && (
+            <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/30 dark:bg-amber-950/20 dark:text-amber-200">
+              Frontend auth env is missing. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+            </div>
+          )}
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 dark:text-slate-300 ml-1">Email Address</label>
@@ -110,7 +123,7 @@ export const Login: React.FC = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !isSupabaseConfigured}
               className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25"
             >
               {loading ? 'Processing...' : (
@@ -134,6 +147,7 @@ export const Login: React.FC = () => {
           <button
             type="button"
             onClick={handleGoogleLogin}
+            disabled={!isSupabaseConfigured}
             className="w-full py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-3 shadow-sm"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
