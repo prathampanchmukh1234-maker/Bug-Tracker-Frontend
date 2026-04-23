@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, Menu, Bug, Bell, CheckCircle2, MessageSquare, UserPlus, Info } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../utils/supabaseClient';
 import { apiUrl } from '../utils/api';
 import { cn } from '../components/Badge';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,37 +11,16 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
-  const { user, signOut } = useAuth();
+  const { user, session, signOut } = useAuth();
   const navigate = useNavigate();
-  const [profileName, setProfileName] = useState<string>('');
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationsLoaded, setNotificationsLoaded] = useState(false);
   const unreadCount = notifications.filter(n => !n.is_read).length;
-
-  const fetchProfile = async () => {
-    try {
-      if (!supabase) return;
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
-
-      const response = await fetch(apiUrl('/api/me'), {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data?.name) setProfileName(data.name);
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
+  const profileName = user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';
 
   const fetchNotifications = async () => {
     try {
-      if (!supabase) return;
-      const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
       const response = await fetch(apiUrl('/api/notifications'), {
@@ -53,6 +31,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
       if (response.ok) {
         const data = await response.json();
         setNotifications(data);
+        setNotificationsLoaded(true);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -60,23 +39,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
   };
 
   useEffect(() => {
-    if (!user) return;
-    fetchProfile();
-    fetchNotifications();
+    if (!user || !showNotifications) return;
 
-    // Polling notifications every 30s
+    fetchNotifications();
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, showNotifications, session?.access_token]);
 
   const handleMarkAsRead = async (id: string, ticketId?: string) => {
     try {
-      if (!supabase) return;
-      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
       await fetch(apiUrl(`/api/notifications/${id}/read`), {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${session?.access_token}`
+          'Authorization': `Bearer ${session.access_token}`
         }
       });
       
@@ -93,12 +69,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
 
   const markAllRead = async () => {
     try {
-      if (!supabase) return;
-      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
       await fetch(apiUrl('/api/notifications/mark-all-read'), {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${session?.access_token}`
+          'Authorization': `Bearer ${session.access_token}`
         }
       });
       setNotifications(notifications.map(n => ({ ...n, is_read: true })));
@@ -141,7 +116,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle }) => {
             {/* Notifications */}
             <div className="relative">
               <button 
-                onClick={() => setShowNotifications(!showNotifications)}
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                }}
                 className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all relative"
               >
                 <Bell className="w-5 h-5" />

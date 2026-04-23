@@ -22,15 +22,19 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchMyTickets = async () => {
+      if (!session?.access_token || !user?.id) {
+        setLoadingTickets(false);
+        return;
+      }
+
       try {
-        const response = await fetch(apiUrl(`/api/tickets?assigneeId=${user?.id}`), {
+        const response = await fetch(apiUrl('/api/tickets/assigned-summary'), {
           headers: {
-            'Authorization': `Bearer ${session?.access_token}`
+            'Authorization': `Bearer ${session.access_token}`
           }
         });
         if (response.ok) {
-          const data = await response.json();
-          setMyTickets(data.filter((t: any) => t.status !== 'Done'));
+          setMyTickets(await response.json());
         }
       } catch (error) {
         console.error('Failed to fetch my tickets:', error);
@@ -39,10 +43,8 @@ export const Dashboard: React.FC = () => {
       }
     };
 
-    if (user?.id) {
-      fetchMyTickets();
-    }
-  }, [session, user]);
+    fetchMyTickets();
+  }, [session?.access_token, user?.id]);
 
   useEffect(() => {
     if (searchParams.get('new') === 'true') {
@@ -178,7 +180,7 @@ export const Dashboard: React.FC = () => {
               </div>
               <div className="flex items-center gap-1 text-slate-400">
                 <Users className="w-4 h-4" />
-                <span className="text-xs font-bold">{project.members?.length ?? 0}</span>
+                  <span className="text-xs font-bold">{project.member_count ?? project.members?.length ?? 0}</span>
               </div>
             </div>
             

@@ -8,6 +8,7 @@ interface Project {
   description: string;
   owner_id: string;
   userRole?: string;
+  member_count?: number;
   members?: { role: string; user: { id: string; name: string; avatar_url?: string } }[];
   updated_at?: string;
   created_at?: string;
